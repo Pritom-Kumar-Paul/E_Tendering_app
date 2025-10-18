@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /tenders/{tid} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+
+      match /bids/{bidUid} {
+        allow read: if isSignedIn();
+
+        // Bidder can create/update their own bid, but cannot change status
+        allow create: if isSignedIn() && request.auth.uid == bidUid;
+        allow update: if isSignedIn()
+                      && request.auth.uid == bidUid
+                      && !(request.resource.data.keys().hasOnly(['status']) || request.resource.data.diff(resource.data).changedKeys().hasAny(['status']));
+        allow delete: if isSignedIn() && request.auth.uid == bidUid;
+
+        // Admin can update anything
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+  }
+}

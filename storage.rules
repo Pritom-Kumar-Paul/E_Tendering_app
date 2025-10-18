@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // Bid attachments & signature: only owner can read/write
+    match /bids/{tenderId}/{uid}/{allPaths=**} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // KYC docs: only owner
+    match /kyc/{uid}/{allPaths=**} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // Tender documents (adjust as needed)
+    match /tender_docs/{allPaths=**} {
+      allow read: if true;      // public download
+      allow write: if false;    // only admin via console/functions
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
