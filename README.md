@@ -93,8 +93,8 @@ The **E-Tendering System** solves these issues by providing a **digital platform
 
 ## 👩‍💻 Contributors
 - **Pritom Paul** – Project Developer  
-- **Team Members** – [Add others here]  
-- **Supervisor:** [Name of your course teacher or advisor]
+
+- **Supervisor:** Md. Osama
 
 ---
 
